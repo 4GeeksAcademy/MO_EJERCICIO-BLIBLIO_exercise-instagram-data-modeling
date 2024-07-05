@@ -106,13 +106,11 @@
 #     print("There was a problem genering the diagram")
 #     raise e
 
-
 import os
 import sys
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, create_engine, long
 from sqlalchemy.orm import relationship, declarative_base
-from sqlalchemy import create_engine
-from eralchemy2 import render_er # type: ignore
+from eralchemy2 import render_er  # type: ignore
 
 # importación Flask
 from flask import Flask
@@ -126,17 +124,23 @@ Base = declarative_base()
 
 class User(Base):
     __tablename__ = 'user'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String(80), unique=True, nullable=False)
     firstname = Column(String(250))
     lastname = Column(String(250), nullable=False)
     email = Column(String(120), unique=True, nullable=False)
+    posts = relationship('Post', back_populates='user')
+    comments = relationship('Comment', back_populates='author')
+    followers = relationship('Follower', foreign_keys='Follower.user_to_id', back_populates='user_to', lazy=True)
+    following = relationship('Follower', foreign_keys='Follower.user_from_id', back_populates='user_from', lazy=True)
 
 class Follower(Base):
     __tablename__ = 'follower'
     id = Column(Integer, primary_key=True)
     user_to_id = Column(Integer, ForeignKey('user.id'))
     user_from_id = Column(Integer, ForeignKey('user.id'))
+    user_to = relationship('User', foreign_keys=[user_to_id], back_populates='followers', lazy=True)
+    user_from = relationship('User', foreign_keys=[user_from_id], back_populates='following', lazy=True)
 
 class Media(Base):
     __tablename__ = 'media'
@@ -144,11 +148,15 @@ class Media(Base):
     type = Column(String(250))
     url = Column(String(250))
     post_id = Column(Integer, ForeignKey('post.id'), nullable=False)
+    post = relationship('Post', back_populates='media', lazy=True)
 
 class Post(Base):
     __tablename__ = 'post'
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('user.id'))
+    user = relationship('User', back_populates='posts')
+    media = relationship('Media', back_populates='post')
+    comments = relationship('Comment', back_populates='post', lazy=True)
 
 class Comment(Base):
     __tablename__ = 'comment'
@@ -156,6 +164,8 @@ class Comment(Base):
     comment_text = Column(String(250))
     author_id = Column(Integer, ForeignKey('user.id'))
     post_id = Column(Integer, ForeignKey('post.id'))
+    author = relationship('User', back_populates='comments', lazy=True)
+    post = relationship('Post', back_populates='comments', lazy=True)
 
 # Crear la base de datos
 engine = create_engine('sqlite:///example.db')
