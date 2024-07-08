@@ -121,7 +121,7 @@ class Users(Base):
     name = Column(String(250), nullable=False)
     username = Column(String(250), nullable=False)
     email = Column(String(250), nullable=False)
-    password = Column(String(250), nullable=False)
+   
 
 class Followers(Base):
     __tablename__ = 'followers'
@@ -144,7 +144,7 @@ class Post(Base):
 
     # Relación: Muchos posts pertenecen a un usuario
     user_id = Column(Integer, ForeignKey('users.id'))
-    users = relationship(Users)
+   
     
     # Relación: Un post puede tener muchos comentarios
     post_id_comments = Column(Integer, ForeignKey('posts.id'))
