@@ -126,29 +126,21 @@ class Users(Base):
 class Followers(Base):
     __tablename__ = 'followers'
     id = Column(Integer, primary_key=True)
-    accepted = Column(Boolean)
-
-    # Relación: Muchos seguidores pertenecen a un usuario
-    follower_id = Column(Integer, ForeignKey('users.id'))
-    follower = relationship('Users', foreign_keys=[follower_id])
-    # Relación: Muchos seguidores están asociados a un usuario
-    user_id = Column(Integer, ForeignKey('users.id'))
-    user = relationship('Users', foreign_keys=[user_id])
+    user_from_id = Column(Integer, ForeignKey("User.id"))
+    user_relationship_from = relationship("User", foreign_keys=[user_from_id])
+    user_to_id = Column(Integer, ForeignKey("User.id"))
+    user_relationship_to = relationship("User", foreign_keys=[user_to_id])
     
 
 class Post(Base):
     __tablename__ = 'posts'
     id = Column(Integer, primary_key=True)
-    photo = Column(String(50))
-    description = Column(String(250))
-
     # Relación: Muchos posts pertenecen a un usuario
-    user_id = Column(Integer, ForeignKey('users.id'))
-   
+    user_id = Column(Integer, ForeignKey('User.id'))
+    Post_relationship = relationship("User")
     
-    # Relación: Un post puede tener muchos comentarios
-    post_id_comments = Column(Integer, ForeignKey('posts.id'))
-    comments = relationship('Comments')  
+
+   
     
 
 class Likes(Base):
