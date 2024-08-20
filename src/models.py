@@ -61,8 +61,6 @@
     #with app.app_context():
        # db.create_all()
 
-
-
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from eralchemy2 import render_er
@@ -82,8 +80,18 @@ class User(db.Model):
 
     posts = db.relationship('Post', backref='author', lazy=True)
     comments = db.relationship('Comment', backref='author', lazy=True)
-    following = db.relationship('Follower', foreign_keys='Follower.user_from_id', backref='follower', lazy=True)
-    followers = db.relationship('Follower', foreign_keys='Follower.user_to_id', backref='followed', lazy=True)
+
+    # following = db.relationship('Follower', foreign_keys='Follower.user_from_id', backref='follower', lazy=True)
+    # followers = db.relationship('Follower', foreign_keys='Follower.user_to_id', backref='followed', lazy=True)
+
+# Relaciones muchos-a-muchos
+    following = db.relationship(
+        'User', secondary=followers,
+        primaryjoin=(followers.c.user_from_id == id),
+        secondaryjoin=(followers.c.user_to_id == id),
+        backref=db.backref('followers', lazy='dynamic'), lazy='dynamic'
+    )
+
 
 class Post(db.Model):
     __tablename__ = 'post'
